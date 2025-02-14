@@ -4,6 +4,6 @@
 echo "Deleting existing dist folder"
 rm -rf dist
 
-# Build 
+# Build
 echo "Building the project"
-tsup --dts
+npx tsup --dts
