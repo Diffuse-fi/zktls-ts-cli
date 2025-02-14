@@ -1,7 +1,7 @@
 {
-  "name": "@reclaimprotocol/zk-fetch",
+  "name": "@diffusefi/zktls-ts-cli",
   "version": "0.2.0",
-  "description": "HTTPS Fetch with a zkproof of correctness of fetch",
+  "description": "General zkTLS interface library",
   "main": "./dist/index.js",
   "types": "./dist/index.d.ts",
   "files": [
@@ -19,10 +19,10 @@
     "build": "sh build.sh",
     "test": "vitest"
   },
-  "author": "madhavanmalolan",
-  "license": "SEE LICENSE IN https://gitlab.reclaimprotocol.org/integrations/offchain/zk-fetch/-/blob/master/LICENSE.md",
+  "author": "zktls",
+   "SEE LICENSE IN https://github.com/Diffuse-fi/zktls-ts-cli/blob/master/LICENSE.md",
   "dependencies": {
-    "@reclaimprotocol/attestor-core": "3.0.5",
+    "@diffusefi/fetch-proof-server": "file:fetch-proof-server",
     "@swc/core": "^1.6.13",
     "ethers": "^5.7.2",
     "pino": "^8.20.0",
@@ -39,11 +39,11 @@
   },
   "repository": {
     "type": "git",
-    "url": "https://gitlab.reclaimprotocol.org/integrations/offchain/zk-fetch"
+    "url": "https://github.com/diffuse-fi/fetch-proof-client"
   },
   "keywords": [
     "zk",
-    "fetch",
-    "reclaimprotocol"
+    "zktls",
+    "diffuse-fi"
   ]
 }

@@ -1,12 +1,11 @@
-import { createClaimOnAttestor } from "@reclaimprotocol/attestor-core";
+import { createProofClaim } from "@diffusefi/fetch-proof-server";
 import { HttpMethod, LogType } from "./types";
 import { Options, secretOptions } from "./interfaces";
 import {
   assertCorrectnessOfOptions,
   validateURL,
   sendLogs,
-  validateApplicationIdAndSecret,
-  transformProof,
+  validateApplicationIdAndSecret
 } from "./utils";
 import { v4 } from "uuid";
 import P from "pino";
@@ -14,7 +13,7 @@ import { FetchError } from "./errors";
 import { WITNESS_NODE_URL } from "./constants";
 const logger = P();
 
-export class ReclaimClient {
+export class DiffuseClient {
   applicationId: string;
   applicationSecret: string;
   logs?: boolean;
@@ -35,21 +34,21 @@ export class ReclaimClient {
     );
   }
 
-  async zkFetch(
+  async fetchProof(
     url: string,
     options?: Options,
     secretOptions?: secretOptions,
     retries = 1,
     retryInterval = 1000
   ) {
-    validateURL(url, "zkFetch");
+    validateURL(url, "fetchProof");
     if (options !== undefined) {
       assertCorrectnessOfOptions(options);
     }
     const fetchOptions = {
       method: options?.method || HttpMethod.GET,
       body: options?.body,
-      headers: { ...options?.headers, ...secretOptions?.headers },
+      headers: { ...options?.headers },
     };
     await sendLogs({
       sessionId: this.sessionId,
@@ -62,9 +61,7 @@ export class ReclaimClient {
       try {
         let fetchResponse = "";
         if (
-          !secretOptions?.responseMatches &&
-          !secretOptions?.responseRedactions && 
-          !secretOptions?.paramValues
+          !secretOptions?.diffuseApiKey
         ) {
           const response = await fetch(url, fetchOptions);
           if (!response.ok) {
@@ -74,27 +71,24 @@ export class ReclaimClient {
           }
           fetchResponse = await response.text();
         }
-        const claim = await createClaimOnAttestor({
+        const claim = await createProofClaim({
           name: "http",
           params: {
             method: fetchOptions.method as HttpMethod,
             url: url,
-            responseMatches: secretOptions?.responseMatches || [
+            responseMatches: secretOptions?.diffuseApiKey || [
               {
                 type: "contains",
                 value: fetchResponse,
               },
             ],
             headers: options?.headers,
-            geoLocation: options?.geoLocation,
-            responseRedactions: secretOptions?.responseRedactions || [],
+            proofType: options?.proofType,
             body: fetchOptions.body || "",
             paramValues: options?.paramValues,
           },
           secretParams: {
-            cookieStr: secretOptions?.cookieStr || "",
-            headers: secretOptions?.headers || {},
-            paramValues: secretOptions?.paramValues,
+            paramValues: secretOptions?.diffuseApiKey,
           },
           ownerPrivateKey: this.applicationSecret,
           logger: logger,
@@ -111,7 +105,7 @@ export class ReclaimClient {
           logType: LogType.PROOF_GENERATED,
           applicationId: this.applicationId,
         });
-        return transformProof(claim);
+        return claim;
       } catch (error) {
         attempt++;
         if (attempt >= retries) {
